@@ -1,8 +1,10 @@
 require 'active_support/configurable'
 require 'casino/engine'
+require 'mongoid'
 
 module CASino
   include ActiveSupport::Configurable
+  Mongoid.load!(File.expand_path('../../config/mongoid.yml', __FILE__), Rails.env)
 
   defaults = {
     authenticators: HashWithIndifferentAccess.new,

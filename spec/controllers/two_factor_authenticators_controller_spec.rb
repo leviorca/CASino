@@ -140,7 +140,7 @@ describe CASino::TwoFactorAuthenticatorsController do
               post :create, request_options
               lambda do
                 other_two_factor_authenticator.reload
-              end.should raise_error(ActiveRecord::RecordNotFound)
+              end.should raise_error(Mongoid::Errors::DocumentNotFound)
             end
           end
 
@@ -210,7 +210,7 @@ describe CASino::TwoFactorAuthenticatorsController do
           delete :destroy, request_options
           lambda do
             two_factor_authenticator.reload
-          end.should raise_error(ActiveRecord::RecordNotFound)
+          end.should raise_error(Mongoid::Errors::DocumentNotFound)
         end
 
         it 'does not delete other two-factor authenticators' do

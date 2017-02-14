@@ -11,7 +11,7 @@ class CASino::SessionsController < CASino::ApplicationController
   def index
     @ticket_granting_tickets = current_user.ticket_granting_tickets.active
     @two_factor_authenticators = current_user.two_factor_authenticators.active
-    @login_attempts = current_user.login_attempts.order(created_at: :desc).first(5)
+    @login_attempts = current_user.login_attempts.order_by(created_at: :desc).limit(5)
   end
 
   def new
@@ -39,7 +39,7 @@ class CASino::SessionsController < CASino::ApplicationController
   def destroy_others
     current_user
       .ticket_granting_tickets
-      .where('id != ?', current_ticket_granting_ticket.id)
+      .ne(id: current_ticket_granting_ticket.id)
       .destroy_all if signed_in?
     redirect_to params[:service] || sessions_path
   end

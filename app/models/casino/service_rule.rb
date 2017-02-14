@@ -1,6 +1,19 @@
 
-class CASino::ServiceRule < ActiveRecord::Base
-  validates :name, presence: true
+class CASino::ServiceRule
+  include Mongoid::Document
+  include Mongoid::Timestamps
+
+  store_in collection: 'casino_service_rules'
+
+  field :enabled,         type: Mongoid::Boolean, default: true
+  field :order,           type: Integer
+  field :name,            type: String
+  field :url,             type: String
+  field :regex,           type: Mongoid::Boolean, default: false
+
+  index url: 1
+
+  validates :enabled, :order, :name, :regex, presence: true
   validates :url, uniqueness: true, presence: true
 
   def self.allowed?(service_url)
