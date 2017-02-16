@@ -28,14 +28,6 @@ test:
       uri: <%= ENV['TB_MONGO_URI'] || "mongodb://localhost/myapp-test" %>
       options:
 
-prestaging:
-  options:
-    <<: *DEFAULT_OPTIONS
-  clients:
-    default:
-      uri: <%= ENV['TB_MONGO_URI'] || "mongodb://localhost/myapp-prestaging" %>
-      options:
-
 production:
   options:
     <<: *DEFAULT_OPTIONS
