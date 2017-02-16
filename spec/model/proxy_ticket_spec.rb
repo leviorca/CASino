@@ -1,14 +1,15 @@
 require 'spec_helper'
 
 describe CASino::ProxyTicket do
+  let(:proxy_granting_ticket) {FactoryGirl.create :proxy_granting_ticket}
   let(:unconsumed_ticket) {
     ticket = described_class.new ticket: 'PT-12345', service: 'any_string_is_valid'
-    ticket.proxy_granting_ticket_id = 1
+    ticket.proxy_granting_ticket = proxy_granting_ticket
     ticket
   }
   let(:consumed_ticket) {
     ticket = described_class.new ticket: 'PT-54321', service: 'any_string_is_valid'
-    ticket.proxy_granting_ticket_id = 1
+    ticket.proxy_granting_ticket = proxy_granting_ticket
     ticket.consumed = true
     ticket.save!
     ticket
@@ -46,7 +47,7 @@ describe CASino::ProxyTicket do
       lambda do
         described_class.cleanup_unconsumed
       end.should change(described_class, :count).by(-1)
-      described_class.find_by_ticket('PT-12345').should be_falsey
+      described_class.where(ticket: 'PT-12345').first.should be_falsey
     end
   end
 
@@ -57,7 +58,7 @@ describe CASino::ProxyTicket do
       lambda do
         described_class.cleanup_consumed
       end.should change(described_class, :count).by(-1)
-      described_class.find_by_ticket('PT-12345').should be_falsey
+      described_class.where(ticket: 'PT-12345').first.should be_falsey
     end
   end
 end

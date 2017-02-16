@@ -4,7 +4,7 @@ class CASino::LoginAttemptsController < CASino::ApplicationController
   before_action :ensure_signed_in, only: [:index]
 
   def index
-    @login_attempts = current_user.login_attempts.order(created_at: :desc)
+    @login_attempts = current_user.login_attempts.order_by(created_at: :desc)
                                   .page(params[:page]).per(10)
   end
 end

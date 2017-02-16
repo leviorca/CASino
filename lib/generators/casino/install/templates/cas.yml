@@ -14,34 +14,11 @@ defaults: &defaults
 development:
   <<: *defaults
   authenticators:
-    static:
-      class: "CASino::StaticAuthenticator"
+    myapp-development:
+      authenticator: "Moped"
       options:
-        users:
-          testuser:
-            password: "foobar123"
-
-test:
-  <<: *defaults
-  authenticators:
-    static:
-      class: "CASino::StaticAuthenticator"
-      options:
-        users:
-          testuser:
-            password: "foobar123"
-
-production:
-  <<: *defaults
-  authenticators:
-    my_company_ldap:
-      authenticator: "LDAP"
-      options:
-        host: "localhost"
-        port: 12445
-        base: "dc=users,dc=example.com"
-        username_attribute: "uid"
-        encryption: "simple_tls"
-        extra_attributes:
-          email: "mail"
-          fullname: "displayname"
+        database_url: "mongodb://localhost:27017/myapp-development"
+        collection: "users"
+        username_column: "email"
+        password_column: "encrypted_password"
+        salt_column: "password_salt"

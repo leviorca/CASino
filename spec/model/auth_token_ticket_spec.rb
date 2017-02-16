@@ -10,7 +10,7 @@ describe CASino::AuthTokenTicket do
       lambda do
         described_class.cleanup
       end.should change(described_class, :count).by(-1)
-      described_class.find_by_ticket('ATT-12345').should be_falsey
+      described_class.where(ticket: 'ATT-12345').first.should be_falsey
     end
   end
 

@@ -32,6 +32,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'factory_girl', '~> 4.1'
   s.add_development_dependency 'webmock', '~> 1.9'
   s.add_development_dependency 'coveralls', '~> 0.7'
+  s.add_development_dependency 'database_cleaner'
 
   s.add_runtime_dependency 'rails', '>= 4.1.0', '< 4.3.0'
   s.add_runtime_dependency 'sass-rails', '>= 4.0.0', '< 6.0.0'
@@ -44,4 +45,5 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'grape-entity', '~> 0.4'
   s.add_runtime_dependency 'rqrcode_png', '~> 0.1'
   s.add_runtime_dependency 'kaminari', '~> 0.16'
+  s.add_runtime_dependency 'mongoid'
 end

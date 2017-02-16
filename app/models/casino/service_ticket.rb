@@ -1,24 +1,37 @@
 require 'addressable/uri'
 
-class CASino::ServiceTicket < ActiveRecord::Base
+class CASino::ServiceTicket
+  include Mongoid::Document
+  include Mongoid::Timestamps
   include CASino::ModelConcern::Ticket
+
+  store_in collection: 'casino_service_tickets'
+
+  field :ticket,                    type: String
+  field :service,                   type: String
+  field :consumed,                  type: Mongoid::Boolean, default: false
+  field :issued_from_credentials,   type: Mongoid::Boolean, default: false
+
+  index ticket: 1
 
   self.ticket_prefix = 'ST'.freeze
 
-  belongs_to :ticket_granting_ticket
+  validates :ticket, :service, :consumed, :issued_from_credentials, presence: true
+
+  belongs_to :ticket_granting_ticket, class_name: 'CASino::TicketGrantingTicket', index: true
   before_destroy :send_single_sign_out_notification, if: :consumed?
-  has_many :proxy_granting_tickets, as: :granter, dependent: :destroy
+  has_many :proxy_granting_tickets, class_name: 'CASino::ProxyGrantingTicket', as: :granter, dependent: :destroy
 
   def self.cleanup_unconsumed
-    self.delete_all(['created_at < ? AND consumed = ?', CASino.config.service_ticket[:lifetime_unconsumed].seconds.ago, false])
+    self.delete_all({created_at: {'$lt' => CASino.config.service_ticket[:lifetime_unconsumed].seconds.ago}, consumed: false})
   end
 
   def self.cleanup_consumed
-    self.destroy_all(['(ticket_granting_ticket_id IS NULL OR created_at < ?) AND consumed = ?', CASino.config.service_ticket[:lifetime_consumed].seconds.ago, true])
+    self.destroy_all({consumed: true, '$or' => [{ticket_granting_ticket_id: nil}, {created_at: {'$lt' => CASino.config.service_ticket[:lifetime_consumed].seconds.ago}}]})
   end
 
   def self.cleanup_consumed_hard
-    self.delete_all(['created_at < ? AND consumed = ?', (CASino.config.service_ticket[:lifetime_consumed] * 2).seconds.ago, true])
+    self.delete_all({created_at: {'$lt' => (CASino.config.service_ticket[:lifetime_consumed] * 2).seconds.ago}, consumed: true})
   end
 
   def service=(service)

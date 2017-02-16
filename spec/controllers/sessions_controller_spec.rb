@@ -318,7 +318,7 @@ describe CASino::SessionsController do
 
             it 'sets the users attributes' do
               post :create, params
-              user = CASino::User.last
+              user = CASino::User.order_by(created_at: 1).last
               user.username.should == username
               user.authenticator.should == authenticator
             end

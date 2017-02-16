@@ -4,7 +4,7 @@ namespace :casino do
   namespace :user do
     desc 'Search users by name.'
     task :search, [:query] => :environment do |task, args|
-      users = CASino::User.where('username LIKE ?', "%#{args[:query]}%")
+      users = CASino::User.where({username: Regexp.new(args[:query])})
       if users.any?
         headers = ['User ID', 'Username', 'Authenticator', 'Two-factor authentication enabled?']
         table = Terminal::Table.new :headings => headers do |t|

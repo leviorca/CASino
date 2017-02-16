@@ -20,7 +20,7 @@ namespace :casino do
     desc 'Remove expired proxy tickets.'
     task proxy_tickets: :environment do
       [:consumed, :unconsumed].each do |type|
-        rows_affected = CASino::ProxyTicket.send("cleanup_#{type}").length
+        rows_affected = CASino::ProxyTicket.send("cleanup_#{type}")
         puts "Deleted #{rows_affected} #{type} proxy tickets."
       end
     end
@@ -45,7 +45,7 @@ namespace :casino do
 
     desc 'Remove expired ticket-granting tickets.'
     task ticket_granting_tickets: :environment do
-      rows_affected = CASino::TicketGrantingTicket.cleanup.length
+      rows_affected = CASino::TicketGrantingTicket.cleanup
       puts "Deleted #{rows_affected} ticket-granting tickets."
     end
 

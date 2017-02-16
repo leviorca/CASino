@@ -1,15 +1,29 @@
 require 'user_agent'
 
-class CASino::TicketGrantingTicket < ActiveRecord::Base
+class CASino::TicketGrantingTicket
+  include Mongoid::Document
+  include Mongoid::Timestamps
   include CASino::ModelConcern::Ticket
   include CASino::ModelConcern::BrowserInfo
 
+  store_in collection: 'casino_ticket_granting_tickets'
+
+  field :ticket,                                type: String
+  field :user_agent,                            type: String
+  field :awaiting_two_factor_authentication,    type: Mongoid::Boolean, default: false
+  field :long_term,                             type: Mongoid::Boolean, default: false
+  field :user_ip,                               type: String
+
+  index ticket: 1
+
   self.ticket_prefix = 'TGC'.freeze
 
-  belongs_to :user
-  has_many :service_tickets, dependent: :destroy
+  validates :ticket, :awaiting_two_factor_authentication, :long_term, :user, presence: true
 
-  scope :active, -> { where(awaiting_two_factor_authentication: false).order('updated_at DESC') }
+  belongs_to :user, class_name: 'CASino::User'
+  has_many :service_tickets, class_name: 'CASino::ServiceTicket', dependent: :destroy
+
+  scope :active, -> { where(awaiting_two_factor_authentication: false).order_by(updated_at: :desc) }
 
   def self.cleanup(user = nil)
     if user.nil?
@@ -17,15 +31,16 @@ class CASino::TicketGrantingTicket < ActiveRecord::Base
     else
       base = user.ticket_granting_tickets
     end
-    tgts = base.where([
-      '(created_at < ? AND awaiting_two_factor_authentication = ?) OR (created_at < ? AND long_term = ?) OR created_at < ?',
-      CASino.config.two_factor_authenticator[:timeout].seconds.ago,
-      true,
-      CASino.config.ticket_granting_ticket[:lifetime].seconds.ago,
-      false,
-      CASino.config.ticket_granting_ticket[:lifetime_long_term].seconds.ago
-    ])
-    CASino::ServiceTicket.where(ticket_granting_ticket_id: tgts).destroy_all
+    tgts = base.or({
+      created_at: {'$lt' => CASino.config.two_factor_authenticator[:timeout].seconds.ago},
+      awaiting_two_factor_authentication: true
+    }).or({
+      created_at: {'$lt' => CASino.config.ticket_granting_ticket[:lifetime].seconds.ago},
+      long_term: false
+    }).or({
+      created_at: {'$lt' => CASino.config.ticket_granting_ticket[:lifetime_long_term].seconds.ago}
+    })
+    CASino::ServiceTicket.in(ticket_granting_ticket_id: tgts.map(&:id)).destroy_all
     tgts.destroy_all
   end
 

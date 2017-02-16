@@ -3,7 +3,7 @@ module CASino::ModelConcern::ConsumableTicket
 
   module ClassMethods
     def consume(ticket_identifier)
-      ticket = find_by_ticket(ticket_identifier)
+      ticket = where(ticket: ticket_identifier).first
       if ticket.nil?
         Rails.logger.info "#{model_name.human} '#{ticket_identifier}' not found"
         false
